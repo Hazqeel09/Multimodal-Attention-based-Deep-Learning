@@ -4,16 +4,23 @@ This repository contains the model and code for the paper: **"Multimodal Attenti
 
 ## Overview
 
-This project provides a deep learning model for emergency triage. The `MMA_ET` architecture integrates a `TabNetEncoder` for structured vital signs and text embeddings for unstructured chief complaints, feeding the combined features into a `Vision Transformer (ViT)` for robust prediction.
+This project provides a deep learning architecture designed for accurate and automated emergency triage. The core of the `MMA_ET` model is its ability to process multiple data types simultaneously to form a comprehensive understanding of a patient's condition.
 
-This README provides a complete example of how to use the model's architecture, showing the end-to-end data flow from raw inputs to a final prediction.
+The model's workflow is as follows:
+1.  **Textual Data:** The patient's unstructured chief complaint is converted into a meaningful numerical representation using a pre-trained **BERT** model, accessed via the `SentenceTransformer` library. This captures the semantic context of the patient's symptoms.
+2.  **Tabular Data:** Structured data, such as vital signs and other numerical/categorical patient information, is processed using a `TabNetEncoder`.
+3.  **Feature Fusion & Prediction:** The embeddings from both BERT and TabNet are combined and fed into a `Vision Transformer (ViT)`, which excels at identifying complex patterns and global relationships between all features to make a final triage level prediction.
+
+This README provides a complete, runnable example demonstrating this entire data flow, from raw inputs to a final (random) prediction using the untrained model architecture.
 
 ## Requirements
 
 Ensure you have the necessary libraries installed.
 
 ```bash
-pip install torch numpy pytorch-tabnet timm einops sentence-transformers
+pip install torch numpy
+pip install pytorch-tabnet timm einops
+pip install sentence-transformers
 ```
 
 ## Running a Prediction (Demonstration)
@@ -48,7 +55,7 @@ unsupervised_model = TabNetPretrainer(
     mask_type='sparsemax'
 )
 
-# Initialize the model architecture
+# Initialize the main model architecture
 model = MMA_ET(
     inp_dim=NUM_TABULAR_FEATURES,
     unsupervised_model=unsupervised_model
@@ -59,7 +66,7 @@ model = MMA_ET(
 #   MODEL_WEIGHTS_PATH = "path/to/your/weights.pth"
 #   model.load_state_dict(torch.load(MODEL_WEIGHTS_PATH, map_location=device))
 
-# Set the model to evaluation mode
+# Set the model to evaluation mode for inference
 model.eval()
 print(f"Model initialized on '{device}'. Running with random weights.")
 
@@ -67,10 +74,11 @@ print(f"Model initialized on '{device}'. Running with random weights.")
 # --- 3. Prepare Input Data for a Single Patient ---
 
 # a) Raw text data (patient's chief complaint)
-chief_complaint_text = "fever for two days associated with shortness of breath for one week"
+chief_complaint_text = "patient complains of severe chest pain and shortness of breath"
 
-# b) Load the SentenceTransformer model to create the text embedding
-print("\nEncoding chief complaint text...")
+# b) Use SentenceTransformer (BERT) to create the text embedding
+# In our pipeline we do some preprocessing like mentioned in the paper
+print("\nEncoding chief complaint text with BERT...")
 text_encoder = SentenceTransformer("bert-base-uncased", device=device)
 text_embedding = text_encoder.encode(chief_complaint_text, convert_to_numpy=True)
 
@@ -86,7 +94,7 @@ tabular_tensor = torch.from_numpy(tabular_data).to(device)
 # --- 4. Run the Prediction Flow ---
 
 print("\nRunning inference...")
-with torch.no_grad(): # Disable gradient calculation
+with torch.no_grad(): # Disable gradient calculation for efficiency
     # The model expects a batch_size argument (1 for a single prediction)
     logits, _ = model(1, tabular_tensor, textual_tensor)
 
@@ -109,3 +117,30 @@ print(f"Predicted Class Index: {predicted_class}")
 print(f"--> Predicted Triage Level: '{triage_zones.get(predicted_class, 'Unknown')}'")
 
 ```
+
+## Citation
+
+If you use this code or research in your work, please cite the original paper:
+
+```bibtex
+@ARTICLE{xxxx,
+  author={Athaillah Kamarul Aryffin, Hazqeel Afyq and Baharuddin, Kamarul Aryffin and Mohd Noor, Mohd Halim},
+  journal={IEEE Access},
+  title={Multimodal Attention-based Deep Learning for Emergency Triage with Electronic Health Records},
+  year={xxxx},
+  volume={},
+  number={},
+  pages={},
+  doi={10.1109/ACCESS.2017.DoiNumber}
+}
+```
+
+## Acknowledgments
+
+This work was supported by Universiti Sains Malaysia (Grant number 1001/PPSP/8014125).
+
+## Authors
+
+* **Hazqeel Afyq Athaillah Kamarul Aryffin** - *School of Computer Sciences, Universiti Sains Malaysia*
+* **Kamarul Aryffin Baharuddin** - *School of Medical Sciences, Universiti Sains Malaysia*
+* **Mohd Halim Mohd Noor** - *School of Computer Sciences, Universiti Sains Malaysia*
