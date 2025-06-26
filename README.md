@@ -118,23 +118,6 @@ print(f"--> Predicted Triage Level: '{triage_zones.get(predicted_class, 'Unknown
 
 ```
 
-## Citation
-
-If you use this code or research in your work, please cite the original paper:
-
-```bibtex
-@ARTICLE{xxxx,
-  author={Athaillah Kamarul Aryffin, Hazqeel Afyq and Baharuddin, Kamarul Aryffin and Mohd Noor, Mohd Halim},
-  journal={IEEE Access},
-  title={Multimodal Attention-based Deep Learning for Emergency Triage with Electronic Health Records},
-  year={xxxx},
-  volume={},
-  number={},
-  pages={},
-  doi={10.1109/ACCESS.2017.DoiNumber}
-}
-```
-
 ## Acknowledgments
 
 This work was supported by Universiti Sains Malaysia (Grant number 1001/PPSP/8014125).
